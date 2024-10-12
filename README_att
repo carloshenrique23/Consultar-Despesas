@@ -1,0 +1,142 @@
+function adicionarTipo() {
+    const novoTipo = document.getElementById('novo_tipo').value;
+    if (novoTipo.trim() !== "") {
+        const selectTipo = document.getElementById('tipo');
+        const option = document.createElement('option');
+        option.value = novoTipo;
+        option.text = novoTipo;
+        selectTipo.add(option);
+        document.getElementById('novo_tipo').value = '';
+    }
+}
+
+function ajustarDias() {
+    const mes = document.getElementById('mes').value;
+    const diaSelect = document.getElementById('dia');
+    diaSelect.innerHTML = '';
+
+    if (mes) {
+        const diasNoMes = new Date(2024, mes, 0).getDate();
+        for (let i = 1; i <= diasNoMes; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.text = i;
+            diaSelect.appendChild(option);
+        }
+
+        const optionAtual = document.createElement('option');
+        optionAtual.value = 'atual';
+        optionAtual.text = 'Dia atual';
+        diaSelect.appendChild(optionAtual);
+    }
+}
+
+function verificarDiaAtual() {
+    const diaSelect = document.getElementById('dia').value;
+    if (diaSelect === 'atual') {
+        const hoje = new Date();
+        document.getElementById('dia').value = hoje.getDate();
+    }
+}
+
+function gerarRelatorio() {
+    const tipoFiltro = document.getElementById('filtroTipo').value;
+    const mes = document.getElementById('mes').value;
+    const ano = document.getElementById('ano').value;
+
+    let despesasFiltradas;
+
+    if (tipoFiltro === 'mes' && mes) {
+        despesasFiltradas = bd.recuperarTodosRegistros().filter(d => d.mes == mes);
+    } else if (tipoFiltro === 'ano' && ano) {
+        despesasFiltradas = bd.recuperarTodosRegistros().filter(d => d.ano == ano);
+    } else {
+        alert('Por favor, selecione um filtro válido.');
+        return;
+    }
+
+    exibirRelatorio(despesasFiltradas);
+}
+
+function exibirRelatorio(despesas) {
+    const listaDespesasRelatorio = document.getElementById('listaDespesasRelatorio');
+    listaDespesasRelatorio.innerHTML = '';
+
+    if (despesas.length === 0) {
+        const linha = listaDespesasRelatorio.insertRow();
+        linha.insertCell(0).innerHTML = 'Nenhuma despesa encontrada.';
+        return;
+    }
+
+    despesas.forEach(d => {
+        const linha = listaDespesasRelatorio.insertRow();
+        linha.insertCell(0).innerHTML = `${d.dia}/${d.mes}/${d.ano}`;
+
+        switch (d.tipo) {
+            case '1': d.tipo = 'Alimentação'; break;
+            case '2': d.tipo = 'Educação'; break;
+            case '3': d.tipo = 'Lazer'; break;
+            case '4': d.tipo = 'Saúde'; break;
+            case '5': d.tipo = 'Transporte'; break;
+            case '6': d.tipo = ''; break;
+        }
+        linha.insertCell(1).innerHTML = d.tipo;
+        linha.insertCell(2).innerHTML = d.descricao;
+        linha.insertCell(3).innerHTML = d.valor;
+    });
+}
+
+document.getElementById('filtroTipo').addEventListener('change', function () {
+    const filtroMesContainer = document.getElementById('filtroMesContainer');
+    const filtroAnoContainer = document.getElementById('filtroAnoContainer');
+    if (this.value === 'mes') {
+        filtroMesContainer.style.display = 'block';
+        filtroAnoContainer.style.display = 'none';
+    } else {
+        filtroMesContainer.style.display = 'none';
+        filtroAnoContainer.style.display = 'block';
+    }
+});
+
+
+despesas.sort((a, b) => {
+    let dataA = new Date(a.ano, a.mes - 1, a.dia);
+    let dataB = new Date(b.ano, b.mes - 1, b.dia);
+    return dataA - dataB;
+});
+
+let listaDespesas = document.getElementById("listaDespesas");
+listaDespesas.innerHTML = '';
+
+despesas.forEach(function (d) {
+
+    var linha = listaDespesas.insertRow();
+
+
+    linha.insertCell(0).innerHTML = `${d.dia}/${d.mes}/${d.ano}`;
+
+
+    switch (d.tipo) {
+        case '1': d.tipo = 'Alimentação'; break;
+        case '2': d.tipo = 'Educação'; break;
+        case '3': d.tipo = 'Lazer'; break;
+        case '4': d.tipo = 'Saúde'; break;
+        case '5': d.tipo = 'Transporte'; break;
+        case '6': d.tipo = ''; break;
+    }
+    linha.insertCell(1).innerHTML = d.tipo;
+    linha.insertCell(2).innerHTML = d.descricao;
+    linha.insertCell(3).innerHTML = d.valor;
+
+
+    let btn = document.createElement('button');
+    btn.className = 'btn btn-danger';
+    btn.innerHTML = '<i class="fa fa-times"></i>';
+    btn.id = `id_despesa_${d.id}`;
+    btn.onclick = function () {
+        let id = this.id.replace('id_despesa_', '');
+        bd.remover(id);
+        window.location.reload();
+    };
+    linha.insertCell(4).append(btn);
+});
